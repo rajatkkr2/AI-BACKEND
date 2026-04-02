@@ -9,6 +9,7 @@ const {
   getAllStudents,
   getAllTeachers,
   addTeacher,
+  addStudent,
   deleteUser,
 } = require("../controllers/adminController");
 const { protect, authorize } = require("../middleware/auth");
@@ -57,6 +58,29 @@ router.post(
       .withMessage("Subject is required for teachers"),
   ],
   addTeacher
+);
+
+/**
+ * POST /api/admin/students
+ * Create a new student account
+ * Validates: name, email, password
+ */
+router.post(
+  "/students",
+  [
+    body("name")
+      .trim()
+      .isLength({ min: 2 })
+      .withMessage("Name must be at least 2 characters"),
+    body("email")
+      .isEmail()
+      .normalizeEmail()
+      .withMessage("Please provide a valid email"),
+    body("password")
+      .isLength({ min: 6 })
+      .withMessage("Password must be at least 6 characters"),
+  ],
+  addStudent
 );
 
 /**

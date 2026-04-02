@@ -175,4 +175,56 @@ const deleteUser = async (req, res) => {
   }
 };
 
-module.exports = { getAllStudents, getAllTeachers, addTeacher, deleteUser };
+/**
+ * POST /api/admin/students
+ * Create a new student account
+ * Only accessible by admin
+ *
+ * Request body: { name, email, password }
+ */
+const addStudent = async (req, res) => {
+  try {
+    // Check for validation errors
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: "Validation failed",
+        errors: errors.array(),
+      });
+    }
+
+    const { name, email, password } = req.body;
+
+    // Check if email is already in use
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({
+        success: false,
+        message: "A user with this email already exists.",
+      });
+    }
+
+    // Create the student — role is explicitly set to "student"
+    const student = await User.create({
+      name,
+      email,
+      password,
+      role: "student",
+    });
+
+    res.status(201).json({
+      success: true,
+      message: "Student account created successfully!",
+      data: { student: student.toJSON() },
+    });
+  } catch (error) {
+    console.error("Add student error:", error.message);
+    res.status(500).json({
+      success: false,
+      message: "Failed to create student account.",
+    });
+  }
+};
+
+module.exports = { getAllStudents, getAllTeachers, addTeacher, addStudent, deleteUser };
